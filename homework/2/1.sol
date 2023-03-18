@@ -17,7 +17,7 @@ contract Solifa {
     function playGame(Status _option) public payable returns (string memory) {
         require(msg.value >= 100000 gwei, "you need to send at least 0.0001 BNB");
 
-        require(address(this).balance >= msg.value * 2, "SMART CONTRACT");
+        require(address(this).balance >= msg.value * 2, "you don't have enough balance");
 
         uint256 _statusNum = block.timestamp % 3;
         Status _output = Status(_statusNum);
@@ -27,15 +27,15 @@ contract Solifa {
         if (_option == _output) {
             return "DRAW";
         }
-        if (_option == Status.PAPER && _output == Status.PAPER) {
+        if (_option == Status.PAPER && _output == Status.SCISSORS) {
             return "FAIL";
         }
-        // if (_option == 1 && _output == 0) {
-        //     return "FAIL";
-        // }
-        // if (_option == 2 && _output == 1) {
-        //     return "FAIL";
-        // }
+        if (_option == Status.SCISSORS && _output == Status.STONE) {
+            return "FAIL";
+        }
+        if (_option == Status.STONE && _output == Status.PAPER) {
+            return "FAIL";
+        }
         payable(msg.sender).transfer(msg.value * 2);
         return "WIN";
     }

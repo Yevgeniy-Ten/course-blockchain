@@ -18,7 +18,6 @@ contract AirdropToken{
         {
             _token.transfer(_addressArray[i], _amountArray[i]);
         }
-
     }
 
     function airdropWithTransferFrom(
