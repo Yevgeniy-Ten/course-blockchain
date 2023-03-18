@@ -27,6 +27,9 @@ contract FakeToken {
         balanceOf[to] += amount;
     }
 //    internal это модификатор доступа, который позволяет вызывать функцию только внутри контракта
+//    так же есть private, который позволяет вызывать функцию только внутри контракта, в котором она объявлена
+//    и external, который позволяет вызывать функцию только извне контракта
+
     function _mint(address to, uint256 amount) internal {
         balanceOf[to] += amount;
     }
