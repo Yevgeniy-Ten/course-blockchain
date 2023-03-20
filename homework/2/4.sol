@@ -16,11 +16,21 @@ contract DevVoter {
         require(_votes.length > 0, "No votes to create");
         for (uint256 i = 0; i < _votes.length; i++) {
             voters[_voteName].push(Voter({
-            id : 1,
+            id : i,
             name : _votes[i],
             peoples : new address[](0)
             }));
         }
+    }
+
+    function getVotesByVoteName(string memory _voteName) public returns (string[] memory) {
+        string[] memory _votes = new string[](voters[_voteName].length);
+        for (uint256 i = 0; i < voters[_voteName].length; i++) {
+            Voter storage voter = voters[_voteName][i];
+            _votes[i] = voter.name;
+        }
+
+        return _votes;
     }
 
 
@@ -37,7 +47,8 @@ contract DevVoter {
             }
         }
     }
-//    функцию для извлечения результатов конкретной сессии голосования.
+
+    //    функцию для извлечения результатов конкретной сессии голосования.
     function countVotes(string memory _voteName,string memory _vote) public view returns (string memory,string memory,uint256){
         uint count = 0;
         for (uint i = 0; i < voters[_voteName].length; i++) {
@@ -47,16 +58,9 @@ contract DevVoter {
         }
         return (_voteName,_vote,count);
     }
-    function countAllVotes(string memory _voteName) public view returns (string memory,string memory,uint256){
-        uint count = 0;
-        string memory name;
-        for (uint i = 0; i < voters[_voteName].length; i++) {
-            if(voters[_voteName][i].peoples.length > count) {
-                count = voters[_voteName][i].peoples.length;
-                name = voters[_voteName][i].name;
-            }
-        }
-        return (_voteName,name,count);
+    function countAllVotes(string memory _voteName) public returns (Voter[] memory){
+
+        return voters[_voteName];
     }
 
 }
