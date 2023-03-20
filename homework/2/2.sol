@@ -10,21 +10,29 @@ contract SignedDoc{
         bool signed;
     }
 
-    string docName;
-    Signer[] signers;
+    mapping (string => Signer[]) signersDocs;
     event DocSigned(address owner, string name, uint256 timestamp);
+    event Signers(address[] signers);
 
 
     function createDoc(string memory _docName, address[] memory shouldSigners) public {
-        require(shouldSigners.length == 0, "Document and signers exist");
-        for(uint i = 0; i < shouldSigners.length; i++){
-            signers.push(Signer(shouldSigners[i], 0, false));
+        emit Signers(shouldSigners);
+        require(shouldSigners.length > 0, "signers require");
+        if(signersDocs[_docName].length > 0){
+            revert("Document already exists");
         }
-        docName = _docName;
+        for(uint i = 0; i < shouldSigners.length; i++){
+            signersDocs[_docName].push(Signer({
+            signer:shouldSigners[i],
+            timestamp:0,
+            signed:false
+            }));
+        }
     }
 
-    function allSigned() public view returns(bool){
-        require(signers.length > 0, "No signers");
+    function allSigned(string memory _docName) public view returns(bool){
+        Signer[] storage signers = signersDocs[_docName];
+        require(signers.length > 0, "Document not exists");
         for(uint i = 0; i < signers.length; i++){
             if(!signers[i].signed){
                 return false;
@@ -32,8 +40,11 @@ contract SignedDoc{
         }
         return true;
     }
-    function signDoc() public {
-        require(signers.length > 0, "No signers");
+    //    calldata  это указатель на данные в памяти, которые не могут быть изменены
+    function signDoc(string memory _docName ) public {
+        Signer[] storage signers = signersDocs[_docName];
+        require(signers.length > 0, "Document not exists");
+
         for(uint i = 0; i < signers.length; i++){
             if(signers[i].signer == msg.sender){
                 if(signers[i].signed){
@@ -42,7 +53,7 @@ contract SignedDoc{
                 }
                 signers[i].timestamp = block.timestamp;
                 signers[i].signed = true;
-                emit DocSigned(msg.sender, docName, block.timestamp);
+                emit DocSigned(msg.sender, _docName, block.timestamp);
             }
         }
     }
