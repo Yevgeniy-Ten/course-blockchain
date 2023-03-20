@@ -9,7 +9,7 @@ contract DevVoter {
         address[] peoples;
     }
     //string is vote theme
-    mapping(string => Voter[]) public voters;
+    mapping(string => Voter[]) voters;
 
     function createVote(string memory _voteName, string[] memory _votes) public {
         require(voters[_voteName].length == 0, "Vote already exists");
