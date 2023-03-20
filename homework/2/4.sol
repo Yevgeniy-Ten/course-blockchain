@@ -37,8 +37,8 @@ contract DevVoter {
     function vote(string memory _voteName, string memory _vote) public {
         require(voters[_voteName].length > 0, "Vote does not exist");
         for (uint i = 0; i < voters[_voteName].length; i++) {
-            if(keccak256(abi.encodePacked(voters[_voteName][i].name)) == keccak256(abi.encodePacked(_vote))) {
-                if(voters[_voteName][i].peoples.length > 0) {
+            if (keccak256(abi.encodePacked(voters[_voteName][i].name)) == keccak256(abi.encodePacked(_vote))) {
+                if (voters[_voteName][i].peoples.length > 0) {
                     for (uint j = 0; j < voters[_voteName][i].peoples.length; j++) {
                         require(voters[_voteName][i].peoples[j] != msg.sender, "You have already voted");
                     }
@@ -49,15 +49,16 @@ contract DevVoter {
     }
 
     //    функцию для извлечения результатов конкретной сессии голосования.
-    function countVotes(string memory _voteName,string memory _vote) public view returns (string memory,string memory,uint256){
+    function countVotes(string memory _voteName, string memory _vote) public view returns (string memory, string memory, uint256){
         uint count = 0;
         for (uint i = 0; i < voters[_voteName].length; i++) {
-            if(keccak256(abi.encodePacked(voters[_voteName][i].name)) == keccak256(abi.encodePacked(_vote))) {
+            if (keccak256(abi.encodePacked(voters[_voteName][i].name)) == keccak256(abi.encodePacked(_vote))) {
                 count = voters[_voteName][i].peoples.length;
             }
         }
-        return (_voteName,_vote,count);
+        return (_voteName, _vote, count);
     }
+
     function countAllVotes(string memory _voteName) public returns (Voter[] memory){
 
         return voters[_voteName];
