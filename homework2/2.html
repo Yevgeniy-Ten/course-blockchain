@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Подпись документа</title>
+    <style>
+        .mb2 {
+            margin-bottom: 10px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<br>
+<br>
+<div class="flex justify-center">
+    <a class="waves-effect waves-light btn modal-trigger" data-target="modal1" href="#modal1">Создать документ для
+        подписания</a>
+</div>
+<h5 class="center">
+    Документы для подписания
+</h5>
+<p>
+    Если ваш адресс в metamask совпадает с подписантами документа, и вы еще не подписали то выйдет кнопка подписать
+</p>
+
+<div class="row" id="list">
+</div>
+
+<div id="modal1" class="modal">
+    <div class="modal-content">
+        <h4 class="mb2">Создание документа</h4>
+        <div>
+            <div class="input-field mb-2">
+                <input type="text" id="autocomplete-input" class="autocomplete">
+                <label for="autocomplete-input">Наименования документа</label>
+            </div>
+            <h6 class="mb2">Список подписантов</h6>
+            <ul id="signersList">
+                <li>
+                    <div class="input-field col s6">
+                        <input placeholder="Адрес подписанта" id="first_name" type="text" class="validate">
+                        <label for="first_name">Адрес подписанта</label>
+                    </div>
+                </li>
+            </ul>
+            <a class="waves-effect waves-light btn" id="addBtn">Добавить подписанта</a>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-white red btn-flat">Закрыть</a>
+        <a href="#!" id="createBtn" class="waves-effect waves-green btn-flat">Создать</a>
+    </div>
+</div>
+
+<!-- Compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+<!-- Compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+        type="application/javascript"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js">
+</script>
+<script>
+    const contractAddress = "0xAc156b3554918eC314F636b7C57607BbC5A9BD40"
+
+
+    const abi = [
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                }
+            ],
+            "name": "DocSigned",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "address[]",
+                    "name": "signers",
+                    "type": "address[]"
+                }
+            ],
+            "name": "Signers",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "_docName",
+                    "type": "string"
+                }
+            ],
+            "name": "allSigned",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "_docName",
+                    "type": "string"
+                },
+                {
+                    "internalType": "address[]",
+                    "name": "shouldSigners",
+                    "type": "address[]"
+                }
+            ],
+            "name": "createDoc",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "docNames",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getDocNames",
+            "outputs": [
+                {
+                    "internalType": "string[]",
+                    "name": "",
+                    "type": "string[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "_docName",
+                    "type": "string"
+                }
+            ],
+            "name": "getDocSigners",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "address",
+                            "name": "signer",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "timestamp",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "signed",
+                            "type": "bool"
+                        }
+                    ],
+                    "internalType": "struct SignedDoc.Signer[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "_docName",
+                    "type": "string"
+                }
+            ],
+            "name": "signDoc",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ];
+    const testAccs = ["0x038aDdBc6DF5938FbCE043E6b5D53811bc319CcE", "0xD63b715F4C2d845B9ab75aaeee56538170eB4B5f"]
+    $(document).ready(async function () {
+        const provider = new ethers.providers.Web3Provider(window.ethereum, 97);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        if (!accounts.length) {
+            alert("Подключите кошелек");
+            return;
+        }
+        const account = accounts[0];
+        const signer = provider.getSigner(account);
+        const contract = new ethers.Contract(contractAddress, abi, signer);
+        const getDocs = async () => {
+            const docs = await contract.getDocNames()
+            $("#list").empty();
+            for (let i = 0; i < docs.length; i++) {
+                const docName = docs[i];
+                const signers = await contract.getDocSigners(docName);
+                $("#list").append(createCard(docName, signers))
+
+            }
+            $(".signBtnHandler").each((i,el)=>{
+                $(el).click(async ()=>{
+                    const docName = $(el).attr("data-docName");
+                    try{
+                        const response = await contract.signDoc(docName);
+                        await getDocs();
+                        console.log(response)
+                    }catch (e) {
+                        alert(e.data?.message || e.message || "Ошибка при подписании")
+                    }
+                })
+            })
+        }
+        setInterval(async () => {
+            await getDocs();
+        }, 20000)
+        await getDocs();
+        const elems = document.querySelectorAll('.modal');
+        M.Modal.init(elems, {});
+
+        function createCard(cardName, signers) {
+
+            const list = signers.map((el, i) => {
+                //account выдает в lower case
+                const currentUserIsSigner = el.signer.toLowerCase() === account.toLowerCase();
+                const fullEl  =`<li class="mb2">
+                            <div class="mb2">
+                                ${i + 1}. ${el.signer}
+                            </div>
+                            <p style="display:flex;">
+
+                                Статус: <span class="white badge">${
+                    el.signed ? "Подписал" : "Не подписал"
+                }</span>
+                            ${currentUserIsSigner ? '<span class="white badge">Это вы</span>' : ''}
+                            ${currentUserIsSigner && !el.signed ? `<div class="card-action">                        <a href="#" class="btn waves-effect signBtnHandler" data-docName="${cardName}" >Подписать</a></div>` : ''}
+                            </p>
+                        </li>`
+                return fullEl;
+            })
+            return `<div class="col s12 m3">
+            <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                    <span class="card-title">Название документа: ${cardName}</span>
+                    <h6>
+                        Подписанты:
+                    </h6>
+                    <ul>
+                        ${list}
+                    </ul>
+                </div>
+            </div>
+        </div>`
+        }
+
+        const signerInput = () => {
+            return `<li>
+                    <div class="input-field col s6">
+                        <input placeholder="Адрес подписанта" type="text" class="validate">
+                        <label>Адрес подписанта</label>
+                    </div>
+                </li>`
+        }
+        $("#addBtn").click(() => {
+            $("#signersList").append(signerInput());
+        })
+
+        $("#createBtn").click(async () => {
+            const docName = $("#autocomplete-input").val();
+            const signers = [];
+            $("#signersList input").each((i, el) => {
+                const value = el.value
+                if (!value.length) {
+                    return;
+                }
+                if (value.length !== 42) {
+                    alert("Неверный адрес")
+                    return;
+                }
+                signers.push(value)
+            })
+            if (!signers.length) {
+                alert("Добавьте подписантов")
+                return;
+            } else if (!docName.length) {
+                alert("Введите название документа")
+                return;
+            }
+            try {
+                await contract.createDoc(docName, signers)
+                await getDocs()
+            } catch (e) {
+                alert(e.data?.message || e.message || "Ошибка при создании возможно документ уже существует")
+            }
+        })
+    });
+
+</script>
+</body>
+</html>

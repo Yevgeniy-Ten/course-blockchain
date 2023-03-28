@@ -9,12 +9,14 @@ contract SignedDoc{
         uint256 timestamp;
         bool signed;
     }
-
+    string[] public docNames;
     mapping (string => Signer[]) signersDocs;
     event DocSigned(address owner, string name, uint256 timestamp);
     event Signers(address[] signers);
 
-
+    function getDocNames() public view returns(string[] memory){
+        return docNames;
+    }
     function createDoc(string memory _docName, address[] memory shouldSigners) public {
         emit Signers(shouldSigners);
         require(shouldSigners.length > 0, "signers require");
@@ -27,9 +29,14 @@ contract SignedDoc{
             timestamp:0,
             signed:false
             }));
+            docNames.push(_docName);
         }
     }
-
+    function getDocSigners(string memory _docName) public view returns(Signer[] memory){
+        Signer[] storage signers = signersDocs[_docName];
+        require(signers.length > 0, "Document not exists");
+        return signers;
+    }
     function allSigned(string memory _docName) public view returns(bool){
         Signer[] storage signers = signersDocs[_docName];
         require(signers.length > 0, "Document not exists");
