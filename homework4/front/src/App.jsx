@@ -9,7 +9,7 @@ function App() {
     const [account, setAccount] = useState(null);
     const [contract, setContract] = useState(null);
     const [networkId, setNetworkId] = useState(null);
-    useEffect(() => {
+    const connect = ()=>{
         const init = async () => {
             const provider = await getProvider();
 
@@ -30,19 +30,26 @@ function App() {
         if (window.ethereum) {
             init();
         }
+    }
+    useEffect(() => {
+        connect();
     }, [])
     const handleMint = async () => {
-        const tx = await contract.safeMint(account,{
-            value: ethers.utils.parseEther("0.00001")
-        });
-        await tx.wait();
-        alert("Minted successfully");
+        try{
+            const tx = await contract.safeMint(account,{
+                value: ethers.utils.parseEther("0.00001")
+            });
+            await tx.wait();
+            alert("Minted successfully");
+        }catch (e) {
+            alert("Mint failed");
+        }
     };
     return (
         <div className={"min-h-screen flex items-center justify-center"}>
             <div
-                className="bg-blue-500 hover:bg-blue-700 rounded-full h-16 max-w-sm w-full text-white flex items-center justify-center cursor-pointer">
-                {provider && (
+                className="bg-blue-500 rounded-full h-16 max-w-sm w-full text-white flex items-center justify-center cursor-pointer">
+                {provider ? (
                     <>
                         <div className="flex flex-col items-center mr-2">
                             <p className="font-bold">{account.slice(0, 6) + "..." + account.slice(-4)}</p>
@@ -55,7 +62,14 @@ function App() {
                             Mint NFT
                         </button>
                     </>
-                )}
+                ):
+                    <button
+                        className="bg-white hover:bg-gray-200 text-blue-500 font-bold py-2 px-4 rounded-full"
+                        onClick={connect}
+                    >
+                        Connect NFT
+                    </button>
+                }
             </div>
         </div>
     )
